@@ -4,24 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logg Inn - Røsstad Arkivet</title>
-    <!-- Ikoner -->
-    <script src="[https://unpkg.com/@phosphor-icons/web](https://unpkg.com/@phosphor-icons/web)"></script>
-    <!-- Stil -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-page">
 
     <div class="login-box">
         <i class="ph-fill ph-tree-evergreen logo-icon"></i>
-        <h2>Røsstad Arkivet</h2>
-        <p>Sikker pålogging kreves</p>
         
-        <button id="btn-login" class="btn-primary full-width">Gå til Databasen</button>
+        <h2>Røsstad Arkivet</h2>
+        <p style="margin-bottom: 1.5rem; color: #a7f3d0;">Logg inn for tilgang</p>
+        
+        <div style="margin-bottom: 1rem;">
+            <input type="email" id="inp-email" placeholder="E-postadresse" style="background: rgba(255,255,255,0.9); color: #333;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <input type="password" id="inp-password" placeholder="Passord" style="background: rgba(255,255,255,0.9); color: #333;">
+        </div>
+        
+        <button id="btn-login" class="btn-primary full-width">Logg Inn</button>
         
         <p id="error-msg" class="error-msg"></p>
     </div>
 
-    <!-- Linker til separat login-script -->
     <script type="module" src="login.js"></script>
 </body>
 </html>
