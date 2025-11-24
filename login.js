@@ -7,22 +7,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Håndter klikk
-document.getElementById('btn-login').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-login');
-    const msg = document.getElementById('error-msg');
-    
-    btn.textContent = "Autentiserer...";
-    msg.textContent = "";
-    
-    try {
-        await signInAnonymously(auth);
+const loginBtn = document.getElementById('btn-login');
+if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+        const msg = document.getElementById('error-msg');
         
-        // Suksess -> Gå til hovedsiden (Røsstad.html)
-        window.location.href = "Røsstad.html";
+        loginBtn.textContent = "Autentiserer...";
+        msg.textContent = "";
         
-    } catch (error) {
-        console.error(error);
-        msg.textContent = "Feil: " + error.message;
-        btn.textContent = "Prøv igjen";
-    }
-});
+        try {
+            await signInAnonymously(auth);
+            // Suksess -> Gå til hovedsiden
+            window.location.href = "Røsstad.html";
+        } catch (error) {
+            console.error(error);
+            msg.textContent = "Feil: " + error.message;
+            loginBtn.textContent = "Prøv igjen";
+        }
+    });
+}
