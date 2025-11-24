@@ -1,5 +1,5 @@
-import { initializeApp } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js)";
-import { getAuth, signInAnonymously } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js)";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { firebaseConfig } from "./config.js";
 
 // Init
