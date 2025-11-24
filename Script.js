@@ -3,7 +3,7 @@ import { getAuth, onAuthStateChanged, signOut } from "[https://www.gstatic.com/f
 import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js)";
 import { firebaseConfig } from "./config.js";
 
-// Start
+// Start 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
