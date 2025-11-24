@@ -1,0 +1,219 @@
+/* --- VARIABLER (Norsk Skog) --- */
+:root {
+    --forest-green: #1e5128;   /* Mørk gran */
+    --leaf-green: #4e8d46;     /* Lysere nåler */
+    --bg-color: #f0f4f1;       /* Lys grågrønn bakgrunn */
+    --card-bg: #ffffff;
+    --text-main: #1c1c1c;
+    --text-muted: #666;
+    --border-color: #d1d5db;
+    
+    --male-color: #2563eb;     /* Blå */
+    --female-color: #db2777;   /* Rosa */
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- HJELPEKLASSER --- */
+.hidden { display: none !important; }
+.full-width { width: 100%; }
+
+/* --- LOGIN SIDE STIL --- */
+body.login-page {
+    display: flex; justify-content: center; align-items: center;
+    background: linear-gradient(to bottom, #112d16, #0d1f10);
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    border-radius: 1rem;
+    text-align: center;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 400px;
+}
+
+.logo-icon {
+    font-size: 4rem;
+    color: #4ade80;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.3));
+}
+
+.error-msg {
+    margin-top: 1rem;
+    color: #f87171;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+}
+
+/* --- HEADER (Hovedside) --- */
+header {
+    background: var(--forest-green);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.brand {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+
+.controls {
+    display: flex; align-items: center; gap: 1rem;
+}
+
+.controls button {
+    background: none; border: none; color: #a7f3d0;
+    font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+}
+.controls button:hover { color: white; }
+
+/* --- KNAPPER --- */
+.btn-primary {
+    background-color: var(--leaf-green);
+    color: white; border: none; padding: 0.8rem 1.5rem;
+    border-radius: 0.5rem; font-weight: bold; cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-primary:hover { background-color: var(--forest-green); }
+
+.btn-outline {
+    font-size: 0.9rem !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 0.3rem 0.8rem; border-radius: 4px;
+}
+
+/* --- TREET (GRID LAYOUT) --- */
+#app-container {
+    display: flex; height: 100vh; flex-direction: column;
+}
+
+#tree-view {
+    flex: 1; overflow: auto; position: relative;
+    display: flex; justify-content: center; align-items: center;
+    padding: 3rem;
+    background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.tree-grid {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4rem; transition: transform 0.3s ease;
+}
+
+.row-parents, .row-focus, .row-children {
+    display: flex; justify-content: center; align-items: center;
+    position: relative;
+}
+.row-parents { gap: 3rem; }
+.row-focus { gap: 2rem; }
+.row-children { gap: 1.5rem; flex-wrap: wrap; }
+
+/* --- KORT --- */
+.card {
+    background: white; width: 180px; min-height: 110px;
+    border-radius: 12px; border: 2px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    padding: 1rem; display: flex; flex-direction: column; align-items: center;
+    position: relative; cursor: pointer; transition: all 0.2s;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--leaf-green); }
+.card.focus {
+    border-color: var(--forest-green); background: #f0fdf4;
+    transform: scale(1.1); z-index: 10;
+    box-shadow: 0 0 0 4px rgba(78, 141, 70, 0.2);
+}
+
+.card h3 { margin: 0.5rem 0 0.2rem 0; font-size: 0.95rem; text-align: center; }
+.card p { margin: 0; font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+.card .info-badge { font-size: 0.7rem; color: var(--forest-green); background: #dcfce7; padding: 2px 6px; border-radius: 10px; margin-top: 5px; }
+
+.card-icon { font-size: 1.5rem; padding: 8px; border-radius: 50%; }
+.male .card-icon { color: var(--male-color); background: #eff6ff; }
+.female .card-icon { color: var(--female-color); background: #fdf2f8; }
+
+/* --- PLUSS-KNAPPER --- */
+.slot-container {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.slot-label {
+    font-size: 0.7rem; text-transform: uppercase; font-weight: bold; color: var(--text-muted);
+}
+.btn-add-slot {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px dashed #9ca3af; background: rgba(255,255,255,0.5);
+    color: #9ca3af; display: flex; justify-content: center; align-items: center;
+    cursor: pointer; font-size: 1.2rem; transition: all 0.2s;
+}
+.btn-add-slot:hover { border-color: var(--forest-green); color: var(--forest-green); background: white; }
+
+.focus-actions {
+    position: absolute; width: 100%; height: 100%; pointer-events: none;
+}
+.btn-mini-add {
+    pointer-events: auto; position: absolute;
+    width: 28px; height: 28px; background: var(--leaf-green);
+    color: white; border-radius: 50%; border: none;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 20;
+}
+.btn-mini-add:hover { background: var(--forest-green); transform: scale(1.15); }
+.add-child { bottom: -14px; left: 50%; transform: translateX(-50%); }
+.add-partner { top: 50%; right: -14px; transform: translateY(-50%); }
+
+/* --- MODAL --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);
+    display: flex; justify-content: center; align-items: center; z-index: 3000;
+}
+.modal {
+    background: white; width: 90%; max-width: 500px;
+    border-radius: 1rem; padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;
+}
+.toggle-group {
+    display: flex; background: #f3f4f6; padding: 4px; border-radius: 8px; margin-bottom: 1rem;
+}
+.toggle-btn {
+    flex: 1; padding: 8px; border: none; background: transparent;
+    cursor: pointer; border-radius: 6px; font-weight: 600; color: #6b7280;
+}
+.toggle-btn.active {
+    background: white; color: var(--forest-green); box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem; }
+.form-row { display: flex; gap: 1rem; }
+.form-row .form-group { flex: 1; }
+input, select, textarea {
+    width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;
+}
+.person-select-list {
+    max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 0.5rem;
+}
+.person-option {
+    padding: 0.75rem; border-bottom: 1px solid #f3f4f6; cursor: pointer; display: flex; justify-content: space-between;
+}
+.person-option.selected { background: #ecfdf5; border-left: 4px solid var(--forest-green); }
