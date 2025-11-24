@@ -1,6 +1,6 @@
-import { initializeApp } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js)";
-import { getAuth, onAuthStateChanged, signOut } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js)";
-import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query } from "[https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js)";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 
 // Start 
@@ -40,6 +40,7 @@ function startDataListener() {
     onSnapshot(q, (snapshot) => {
         people = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (!focusPersonId && people.length > 0) {
+            // Prøver å finne "Eivind" eller "Meg" som startperson
             const me = people.find(p => p.name.toLowerCase().includes('eivind') || p.name.toLowerCase() === 'meg');
             focusPersonId = me ? me.id : people[0].id;
         }
