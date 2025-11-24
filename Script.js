@@ -17,21 +17,24 @@ let modalAction = null;
 let modalMode = 'new';
 
 // --- SIKKERHETSSJEKK ---
-// Hvis brukeren ikke er logget inn, kast dem tilbake til index.html
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
         startDataListener(); 
     } else {
+        // Hvis man ikke er logget inn, send tilbake til start
         window.location.href = "index.html";
     }
 });
 
-document.getElementById('btn-logout').addEventListener('click', () => {
-    signOut(auth).then(() => {
-        window.location.href = "index.html";
+const logoutBtn = document.getElementById('btn-logout');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        });
     });
-});
+}
 
 // --- DATA ---
 function startDataListener() {
@@ -40,8 +43,7 @@ function startDataListener() {
     onSnapshot(q, (snapshot) => {
         people = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (!focusPersonId && people.length > 0) {
-            // Prøver å finne "Eivind" eller "Meg" som startperson
-            const me = people.find(p => p.name.toLowerCase().includes('eivind') || p.name.toLowerCase() === 'meg');
+            const me = people.find(p => p.name && (p.name.toLowerCase().includes('eivind') || p.name.toLowerCase() === 'meg'));
             focusPersonId = me ? me.id : people[0].id;
         }
         renderTree();
@@ -54,6 +56,8 @@ function renderTree() {
     const rowFocus = document.getElementById('row-focus');
     const rowChildren = document.getElementById('row-children');
     
+    if(!rowParents || !rowFocus || !rowChildren) return;
+
     // Tøm
     rowParents.innerHTML = '';
     rowFocus.innerHTML = '';
@@ -117,14 +121,12 @@ function createCard(person, isFocus = false) {
         const actions = document.createElement('div');
         actions.className = 'focus-actions';
         
-        // Legg til barn
         const btnChild = document.createElement('button');
         btnChild.className = 'btn-mini-add add-child';
         btnChild.innerHTML = '<i class="ph-bold ph-plus"></i>';
         btnChild.onclick = (e) => { e.stopPropagation(); window.openModal('add-child'); };
         actions.appendChild(btnChild);
 
-        // Legg til partner (hvis mangler)
         if (!person.partnerId) {
             const btnPartner = document.createElement('button');
             btnPartner.className = 'btn-mini-add add-partner';
@@ -137,7 +139,6 @@ function createCard(person, isFocus = false) {
     return el;
 }
 
-// Hjelper: Lag Slot (Kort eller Pluss-knapp)
 function createSlot(person, label, actionType) {
     const wrapper = document.createElement('div');
     wrapper.className = 'slot-container';
@@ -160,10 +161,11 @@ function createSlot(person, label, actionType) {
 // --- MODAL & LAGRING ---
 window.openModal = (action) => {
     modalAction = action;
-    document.getElementById('modal-overlay').classList.remove('hidden');
+    const overlay = document.getElementById('modal-overlay');
+    if(overlay) overlay.classList.remove('hidden');
     
-    // Nullstill skjema
-    document.getElementById('inp-name').value = '';
+    const inpName = document.getElementById('inp-name');
+    if(inpName) inpName.value = '';
     document.getElementById('inp-birth').value = '';
     document.getElementById('inp-death').value = '';
     document.getElementById('inp-desc').value = '';
@@ -189,67 +191,70 @@ window.openModal = (action) => {
     renderExistingList();
 };
 
-document.getElementById('btn-close-modal').onclick = () => document.getElementById('modal-overlay').classList.add('hidden');
+const closeBtn = document.getElementById('btn-close-modal');
+if(closeBtn) closeBtn.onclick = () => document.getElementById('modal-overlay').classList.add('hidden');
 
-document.getElementById('btn-save').onclick = async () => {
-    if (!currentUser) return;
-    const focusP = people.find(p => p.id === focusPersonId);
-    let targetId = null;
+const saveBtn = document.getElementById('btn-save');
+if(saveBtn) {
+    saveBtn.onclick = async () => {
+        if (!currentUser) return;
+        const focusP = people.find(p => p.id === focusPersonId);
+        let targetId = null;
 
-    if (modalMode === 'new') {
-        const newPerson = {
-            name: document.getElementById('inp-name').value,
-            birthDate: document.getElementById('inp-birth').value,
-            deathDate: document.getElementById('inp-death').value,
-            description: document.getElementById('inp-desc').value,
-            gender: document.querySelector('input[name="gender"]:checked').value,
-            fatherId: null, motherId: null, partnerId: null
-        };
-        
-        // Auto-link hvis vi legger til barn
-        if (modalAction === 'add-child' && focusP) {
-             if (focusP.gender === 'M') newPerson.fatherId = focusP.id;
-             else newPerson.motherId = focusP.id;
-             // Sjekk partner
-             if (focusP.partnerId) {
-                 const part = people.find(p=>p.id === focusP.partnerId);
-                 if(part) { if(part.gender==='M') newPerson.fatherId=part.id; else newPerson.motherId=part.id; }
-             }
+        if (modalMode === 'new') {
+            const newPerson = {
+                name: document.getElementById('inp-name').value,
+                birthDate: document.getElementById('inp-birth').value,
+                deathDate: document.getElementById('inp-death').value,
+                description: document.getElementById('inp-desc').value,
+                gender: document.querySelector('input[name="gender"]:checked').value,
+                fatherId: null, motherId: null, partnerId: null
+            };
+            
+            if (modalAction === 'add-child' && focusP) {
+                if (focusP.gender === 'M') newPerson.fatherId = focusP.id;
+                else newPerson.motherId = focusP.id;
+                
+                if (focusP.partnerId) {
+                    const part = people.find(p=>p.id === focusP.partnerId);
+                    if(part) { if(part.gender==='M') newPerson.fatherId=part.id; else newPerson.motherId=part.id; }
+                }
+            }
+
+            const docRef = await addDoc(collection(db, 'familyMembers'), newPerson);
+            targetId = docRef.id;
+            if(modalAction === 'create-first') focusPersonId = targetId;
+
+        } else {
+            targetId = document.getElementById('selected-existing-id').value;
         }
 
-        const docRef = await addDoc(collection(db, 'familyMembers'), newPerson);
-        targetId = docRef.id;
-        if(modalAction === 'create-first') focusPersonId = targetId;
-
-    } else {
-        targetId = document.getElementById('selected-existing-id').value;
-    }
-
-    // Lagre relasjoner i databasen
-    if(focusP && targetId) {
-        const col = collection(db, 'familyMembers');
-        const updates = [];
-        
-        if(modalAction === 'add-parent-m') updates.push(updateDoc(doc(col, focusPersonId), {fatherId: targetId}));
-        else if(modalAction === 'add-parent-f') updates.push(updateDoc(doc(col, focusPersonId), {motherId: targetId}));
-        else if(modalAction === 'add-partner') {
-            updates.push(updateDoc(doc(col, focusPersonId), {partnerId: targetId}));
-            updates.push(updateDoc(doc(col, targetId), {partnerId: focusPersonId}));
+        if(focusP && targetId) {
+            const col = collection(db, 'familyMembers');
+            const updates = [];
+            
+            if(modalAction === 'add-parent-m') updates.push(updateDoc(doc(col, focusPersonId), {fatherId: targetId}));
+            else if(modalAction === 'add-parent-f') updates.push(updateDoc(doc(col, focusPersonId), {motherId: targetId}));
+            else if(modalAction === 'add-partner') {
+                updates.push(updateDoc(doc(col, focusPersonId), {partnerId: targetId}));
+                updates.push(updateDoc(doc(col, targetId), {partnerId: focusPersonId}));
+            }
+            else if(modalAction === 'add-child' && modalMode === 'existing') {
+                const upd = {};
+                if(focusP.gender === 'M') upd.fatherId = focusP.id; else upd.motherId = focusP.id;
+                updates.push(updateDoc(doc(col, targetId), upd));
+            }
+            await Promise.all(updates);
         }
-        else if(modalAction === 'add-child' && modalMode === 'existing') {
-            const upd = {};
-            if(focusP.gender === 'M') upd.fatherId = focusP.id; else upd.motherId = focusP.id;
-            updates.push(updateDoc(doc(col, targetId), upd));
-        }
-        await Promise.all(updates);
-    }
-    document.getElementById('modal-overlay').classList.add('hidden');
-};
+        document.getElementById('modal-overlay').classList.add('hidden');
+    };
+}
 
 function setMode(mode) {
     modalMode = mode;
     document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.toggle-btn[data-mode="${mode}"]`).classList.add('active');
+    const btn = document.querySelector(`.toggle-btn[data-mode="${mode}"]`);
+    if(btn) btn.classList.add('active');
     document.getElementById('form-new').className = mode === 'new' ? '' : 'hidden';
     document.getElementById('form-existing').className = mode === 'existing' ? '' : 'hidden';
 }
@@ -260,8 +265,8 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
 function renderExistingList() {
     const list = document.getElementById('existing-list');
+    if(!list) return;
     list.innerHTML = '';
-    // Filtrer bort fokuspersonen selv
     const candidates = people.filter(p => p.id !== focusPersonId);
     candidates.forEach(p => {
         const d = document.createElement('div');
@@ -276,13 +281,15 @@ function renderExistingList() {
     });
 }
 
-// Zoom Knapper
-document.getElementById('btn-zoom-in').onclick = () => {
+const zoomIn = document.getElementById('btn-zoom-in');
+if(zoomIn) zoomIn.onclick = () => {
     currentScale += 0.1;
     document.getElementById('tree-grid').style.transform = `scale(${currentScale})`;
     document.getElementById('zoom-level').textContent = Math.round(currentScale * 100) + '%';
 };
-document.getElementById('btn-zoom-out').onclick = () => {
+
+const zoomOut = document.getElementById('btn-zoom-out');
+if(zoomOut) zoomOut.onclick = () => {
     if (currentScale > 0.4) currentScale -= 0.1;
     document.getElementById('tree-grid').style.transform = `scale(${currentScale})`;
     document.getElementById('zoom-level').textContent = Math.round(currentScale * 100) + '%';
