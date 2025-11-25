@@ -93,67 +93,184 @@ function setupTabs() {
 }
 
 // --- TREE RENDERER ---
+// --- TREE RENDERER (GLOBAL) ---
 function renderTree() {
-    const parentsRow = document.getElementById('row-parents');
-    const focusRow = document.getElementById('row-focus');
-    const childrenRow = document.getElementById('row-children');
+    const grid = document.getElementById('tree-grid');
+    const svg = document.getElementById('tree-svg');
+    if (!grid || !svg) return;
 
-    if (!parentsRow || !focusRow || !childrenRow) return;
-
-    parentsRow.innerHTML = '';
-    focusRow.innerHTML = '';
-    childrenRow.innerHTML = '';
+    grid.innerHTML = '';
+    svg.innerHTML = ''; // Clear lines
 
     if (state.people.length === 0) {
-        focusRow.innerHTML = `<div style="text-align:center; color:var(--color-text-muted);">
+        grid.innerHTML = `<div style="text-align:center; color:var(--color-text-muted); margin-top:4rem;">
             <p>Ingen personer i treet ennå.</p>
             <p>Klikk på <i class="ph-bold ph-plus-circle" style="color:var(--color-primary);"></i> nede til høyre for å starte!</p>
         </div>`;
         return;
     }
 
-    const focusPerson = state.people.find(p => p.id === state.focusId);
-    if (!focusPerson) return;
+    const visited = new Set();
+    const roots = findRoots();
 
-    // 1. Parents
-    const father = state.people.find(p => p.id === focusPerson.fatherId);
-    const mother = state.people.find(p => p.id === focusPerson.motherId);
-    parentsRow.appendChild(createSlot(father, 'Far', 'add-parent-m'));
-    parentsRow.appendChild(createSlot(mother, 'Mor', 'add-parent-f'));
+    roots.forEach(root => {
+        if (!visited.has(root.id)) {
+            const treeNode = buildTreeNode(root, visited);
+            grid.appendChild(treeNode);
+        }
+    });
 
-    // 2. Partner (Left of Focus)
-    const partner = state.people.find(p => p.id === focusPerson.partnerId);
-    if (partner) {
-        const pCard = createCard(partner);
-        pCard.onclick = () => setFocus(partner.id);
-        focusRow.appendChild(pCard);
+    // Draw lines after layout is computed
+    setTimeout(drawConnections, 100);
+    window.addEventListener('resize', drawConnections);
+}
 
-        // Heart Icon
-        const heart = document.createElement('div');
-        heart.innerHTML = '<i class="ph-fill ph-heart" style="color:var(--color-female); font-size:1.5rem;"></i>';
-        focusRow.appendChild(heart);
+function findRoots() {
+    // A root is someone whose parents are NOT in the current list
+    return state.people.filter(p => {
+        const father = state.people.find(parent => parent.id === p.fatherId);
+        const mother = state.people.find(parent => parent.id === p.motherId);
+        return !father && !mother;
+    });
+}
+
+function buildTreeNode(person, visited) {
+    visited.add(person.id);
+
+    // Container
+    const container = document.createElement('div');
+    container.className = 'node-container';
+
+    // 1. Couple Wrapper
+    const coupleWrapper = document.createElement('div');
+    coupleWrapper.className = 'couple-wrapper';
+
+    // Person Card
+    const pCard = createCard(person);
+    pCard.onclick = () => setFocus(person.id); // Keep focus logic for editing
+    coupleWrapper.appendChild(pCard);
+
+    // Partner Card
+    if (person.partnerId) {
+        const partner = state.people.find(p => p.id === person.partnerId);
+        if (partner && !visited.has(partner.id)) {
+            visited.add(partner.id);
+            const partCard = createCard(partner);
+            partCard.onclick = () => setFocus(partner.id);
+            coupleWrapper.appendChild(partCard);
+        }
+    }
+    container.appendChild(coupleWrapper);
+
+    // 2. Children
+    // Find children where this person (or partner) is a parent
+    const children = state.people.filter(p =>
+        p.fatherId === person.id || p.motherId === person.id ||
+        (person.partnerId && (p.fatherId === person.partnerId || p.motherId === person.partnerId))
+    );
+
+    if (children.length > 0) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'children-container';
+
+        // Sort children by birth date
+        children.sort((a, b) => (a.birthDate || '9999') > (b.birthDate || '9999') ? 1 : -1);
+
+        children.forEach(child => {
+            if (!visited.has(child.id)) {
+                const childNode = buildTreeNode(child, visited);
+                childrenContainer.appendChild(childNode);
+            }
+        });
+        container.appendChild(childrenContainer);
     }
 
-    // 3. Focus Person
-    focusRow.appendChild(createCard(focusPerson, true));
+    return container;
+}
+function drawConnections() {
+    const svg = document.getElementById('tree-svg');
+    const grid = document.getElementById('tree-grid');
+    if (!svg || !grid) return;
 
-    // 4. Children
-    const children = state.people.filter(p => p.fatherId === state.focusId || p.motherId === state.focusId);
-    children.forEach(child => {
-        const cCard = createCard(child);
-        cCard.onclick = () => setFocus(child.id);
-        childrenRow.appendChild(cCard);
+    svg.innerHTML = '';
+    const svgRect = svg.getBoundingClientRect();
+
+    // Map all visible cards by ID
+    const cardMap = new Map();
+    document.querySelectorAll('.card').forEach(card => {
+        if (card.dataset.id) cardMap.set(card.dataset.id, card);
     });
+
+    const drawnPartners = new Set();
+
+    // Helper for coordinates
+    const getCenter = (el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+            x: rect.left + rect.width / 2 - svgRect.left,
+            y: rect.top + rect.height / 2 - svgRect.top,
+            bottom: rect.bottom - svgRect.top,
+            top: rect.top - svgRect.top
+        };
+    };
+
+    state.people.forEach(p => {
+        const pCard = cardMap.get(p.id);
+        if (!pCard) return;
+
+        const pCenter = getCenter(pCard);
+
+        // 1. Parent Connections
+        [p.fatherId, p.motherId].forEach(parentId => {
+            if (parentId) {
+                const parentCard = cardMap.get(parentId);
+                if (parentCard) {
+                    const parCenter = getCenter(parentCard);
+                    // Draw Curved Line
+                    // From Parent Bottom to Child Top
+                    const path = `M ${parCenter.x} ${parCenter.bottom} 
+                                C ${parCenter.x} ${parCenter.bottom + 50}, 
+                                  ${pCenter.x} ${pCenter.top - 50}, 
+                                  ${pCenter.x} ${pCenter.top}`;
+                    createPath(svg, path);
+                }
+            }
+        });
+
+        // 2. Partner Connection
+        if (p.partnerId) {
+            const partnerCard = cardMap.get(p.partnerId);
+            if (partnerCard) {
+                // Avoid drawing twice
+                const pairId = [p.id, p.partnerId].sort().join('-');
+                if (!drawnPartners.has(pairId)) {
+                    drawnPartners.add(pairId);
+                    const partCenter = getCenter(partnerCard);
+                    createPath(svg, `M ${pCenter.x} ${pCenter.y} L ${partCenter.x} ${partCenter.y}`);
+                }
+            }
+        }
+    });
+}
+
+function createPath(svg, d) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.setAttribute("class", "connector");
+    svg.appendChild(path);
 }
 
 function setFocus(id) {
     state.focusId = id;
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('focus'));
     renderTree();
 }
 
-function createCard(person, isFocus = false) {
+function createCard(person) {
+    const isFocus = (person.id === state.focusId);
     const el = document.createElement('div');
     el.className = `card ${isFocus ? 'focus' : ''} ${person.gender === 'F' ? 'female' : 'male'}`;
+    el.dataset.id = person.id; // Crucial for connections
 
     const year = person.birthDate ? new Date(person.birthDate).getFullYear() : '';
     const dead = person.deathDate ? '✝ ' : '';
@@ -166,6 +283,7 @@ function createCard(person, isFocus = false) {
         ${loc ? `<div class="card-location"><i class="ph-bold ph-map-pin"></i> ${loc}</div>` : ''}
     `;
 
+    // Always show actions if focused
     if (isFocus) {
         const actions = document.createElement('div');
         actions.className = 'mini-actions';
@@ -193,23 +311,10 @@ function createCard(person, isFocus = false) {
 }
 
 function createSlot(person, label, action) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'slot';
-    wrapper.innerHTML = `<span class="slot-label">${label}</span>`;
-
-    if (person) {
-        const card = createCard(person);
-        card.onclick = () => setFocus(person.id);
-        wrapper.appendChild(card);
-    } else {
-        const btn = document.createElement('div');
-        btn.className = 'btn-slot';
-        btn.innerHTML = '<i class="ph-bold ph-plus"></i>';
-        btn.onclick = () => window.openModal(action);
-        wrapper.appendChild(btn);
-    }
-    return wrapper;
+    // Deprecated in global view, but kept if needed for other views
+    return document.createElement('div');
 }
+
 
 // --- MAP RENDERER ---
 function renderMap() {

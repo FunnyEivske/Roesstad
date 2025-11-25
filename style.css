@@ -1,5 +1,6 @@
 /* --- RØSSTAD DESIGN SYSTEM --- */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('tree.css');
 
 :root {
     /* --- PALETTE: Røsstad Green --- */
@@ -567,16 +568,28 @@ body.login-page {
     display: flex;
     gap: 1rem;
 }
+
 /* --- FAB (Floating Action Button) --- */
 .fab-btn {
-    position: fixed; bottom: 2rem; right: 2rem;
-    width: 64px; height: 64px; border-radius: 50%;
-    background: var(--color-primary); color: white;
-    border: none; box-shadow: var(--shadow-lg);
-    display: flex; justify-content: center; align-items: center;
-    font-size: 2rem; cursor: pointer; z-index: 500;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 500;
     transition: transform 0.2s, background 0.2s;
 }
+
 .fab-btn:hover {
     transform: scale(1.1) rotate(90deg);
     background: var(--color-primary-dark);

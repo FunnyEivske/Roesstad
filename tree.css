@@ -1,0 +1,65 @@
+/* --- GLOBAL TREE LAYOUT --- */
+.tree-grid {
+    /* Override previous grid styles */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 4rem !important;
+    padding-top: 2rem;
+    transform-origin: top center;
+}
+
+.node-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.couple-wrapper {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.children-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    position: relative;
+}
+
+/* Connector Lines (SVG) */
+#tree-svg {
+    overflow: visible;
+}
+
+path.connector {
+    fill: none;
+    stroke: #cbd5e1;
+    stroke-width: 2px;
+    stroke-linecap: round;
+    transition: stroke 0.3s;
+}
+
+path.connector:hover {
+    stroke: var(--color-primary);
+    stroke-width: 3px;
+}
+
+/* Adjust Card for Tree */
+.card {
+    width: 180px; /* Slightly smaller */
+    min-height: 110px;
+    font-size: 0.9rem;
+}
+
+.card-avatar {
+    font-size: 1.5rem;
+}
