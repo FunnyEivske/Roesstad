@@ -27,22 +27,6 @@
     --color-text-muted: #64748b;
     /* Slate 500 */
 
-    --color-male: #0ea5e9;
-    /* Sky Blue */
-    --color-female: #be123c;
-    /* Rose */
-
-    /* --- SHADOWS & EFFECTS --- */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-
-.login-container {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: var(--blur-glass);
-    padding: 3rem;
-    border-radius: var(--radius-lg);
-    width: 100%;
     max-width: 400px;
     text-align: center;
     color: white;
