@@ -23,11 +23,15 @@ const state = {
 
 // --- IMMEDIATE SETUP (UI Handlers) ---
 // This ensures buttons work even if Auth is slow
-setupTabs();
-setupZoom();
-setupModal();
-setupHelp();
-setupFAB();
+// --- IMMEDIATE SETUP (UI Handlers) ---
+// This ensures buttons work even if Auth is slow
+document.addEventListener('DOMContentLoaded', () => {
+    setupTabs();
+    setupZoom();
+    setupModal();
+    setupHelp();
+    setupFAB();
+});
 
 // --- AUTHENTICATION ---
 onAuthStateChanged(auth, (user) => {
