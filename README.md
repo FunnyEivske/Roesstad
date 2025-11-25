@@ -20,7 +20,7 @@ Se hvor familien har sine røtter.
 
 ### 3. Tidslinje
 En kronologisk oversikt over familiens historie.
-- Her listes alle fødsler og dødsfall opp automatisk basert på informasjonen i treet.
+- Her listes alle fødsler og dødsfall opp automatisk basert på informasjonen i familietreet.
 
 ---
 *Laget med ❤️ for Røsstad-familien.*
