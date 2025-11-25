@@ -365,24 +365,6 @@ body.dark-mode .card-dates {
     transition: opacity var(--transition-normal);
 }
 
-.modal[style*="display: flex"] {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.modal-content {
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    width: 90%;
-    max-width: 550px;
-    position: relative;
-    transform: scale(0.95);
-    transition: transform var(--transition-normal);
-}
-
-.modal[style*="display: flex"] .modal-content {
-    transform: scale(1);
-}
 
 .close-modal {
     position: absolute;
