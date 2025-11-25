@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="no">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Røsstad Familietre</title>
-    <script src="[https://unpkg.com/@phosphor-icons/web](https://unpkg.com/@phosphor-icons/web)"></script>
+
+    <!-- Ikoner -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Leaflet Kart CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <!-- APP CONTAINER -->
@@ -16,19 +25,44 @@
                 <i class="ph-fill ph-tree-evergreen"></i>
                 <span>Røsstad Familietre</span>
             </div>
+
+            <!-- Navigasjon -->
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="tree">Familietre</button>
+                <button class="nav-tab" data-tab="map">Kart</button>
+                <button class="nav-tab" data-tab="timeline">Tidslinje</button>
+            </div>
+
             <div class="controls">
-                <button id="btn-zoom-out"><i class="ph ph-minus-circle"></i></button>
-                <span id="zoom-level">100%</span>
-                <button id="btn-zoom-in"><i class="ph ph-plus-circle"></i></button>
+                <button id="btn-zoom-out" class="icon-btn" title="Zoom ut"><i class="ph ph-minus-circle"></i></button>
+                <span id="zoom-level"
+                    style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); width: 50px; text-align: center;">100%</span>
+                <button id="btn-zoom-in" class="icon-btn" title="Zoom inn"><i class="ph ph-plus-circle"></i></button>
+                <div style="width: 1px; height: 24px; background: #cbd5e1; margin: 0 0.5rem;"></div>
                 <button id="btn-logout" class="btn-outline">Logg ut</button>
             </div>
         </header>
 
-        <main id="tree-view">
-            <div id="tree-grid" class="tree-grid">
-                <div id="row-parents" class="row-parents"></div>
-                <div id="row-focus" class="row-focus"></div>
-                <div id="row-children" class="row-children"></div>
+        <main>
+            <!-- 1. TRE VISNING -->
+            <div id="tree-view" class="view-section">
+                <div id="tree-grid" class="tree-grid">
+                    <div id="row-parents" class="row-parents"></div>
+                    <div id="row-focus" class="row-focus"></div>
+                    <div id="row-children" class="row-children"></div>
+                </div>
+            </div>
+
+            <!-- 2. KART VISNING -->
+            <div id="map-view" class="view-section hidden">
+                <div id="map-container"></div>
+            </div>
+
+            <!-- 3. TIDSLINJE VISNING -->
+            <div id="timeline-view" class="view-section hidden">
+                <div class="timeline-container" id="timeline-content">
+                    <!-- Tidslinje elementer genereres her -->
+                </div>
             </div>
         </main>
     </div>
@@ -38,9 +72,11 @@
         <div class="modal">
             <div class="modal-header">
                 <h3 id="modal-title">Legg til Person</h3>
-                <button id="btn-close-modal" class="btn-icon" style="background:none;border:none;cursor:pointer;"><i class="ph ph-x" style="font-size:1.5rem"></i></button>
+                <button id="btn-close-modal" class="btn-icon"
+                    style="background:none;border:none;cursor:pointer;color:var(--text-muted);"><i class="ph ph-x"
+                        style="font-size:1.5rem"></i></button>
             </div>
-            
+
             <div class="toggle-group" id="mode-toggle">
                 <button class="toggle-btn active" data-mode="new">Opprett Ny</button>
                 <button class="toggle-btn" data-mode="existing">Velg fra Database</button>
@@ -50,7 +86,7 @@
                 <div id="form-new">
                     <div class="form-group">
                         <label>Navn</label>
-                        <input type="text" id="inp-name">
+                        <input type="text" id="inp-name" placeholder="Fullt navn">
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Fødselsdato</label><input type="date" id="inp-birth"></div>
@@ -59,30 +95,47 @@
                     <div class="form-group">
                         <label>Kjønn</label>
                         <div class="radio-group" style="display:flex; gap:1rem;">
-                            <label><input type="radio" name="gender" value="M" checked> Mann</label>
-                            <label><input type="radio" name="gender" value="F"> Kvinne</label>
+                            <label style="font-weight:normal; display:flex; align-items:center; gap:0.5rem;"><input
+                                    type="radio" name="gender" value="M" checked> Mann</label>
+                            <label style="font-weight:normal; display:flex; align-items:center; gap:0.5rem;"><input
+                                    type="radio" name="gender" value="F"> Kvinne</label>
                         </div>
                     </div>
+
+                    <!-- NYTT: Sted for kart -->
+                    <div class="form-group">
+                        <label>Bosted / Opprinnelse (for Kart)</label>
+                        <input type="text" id="inp-location" placeholder="F.eks. 'Grimstad, Norge' eller koordinater">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Brukes til å
+                            plassere personen på kartet.</p>
+                    </div>
+
                     <div class="form-group">
                         <label>Beskrivelse</label>
-                        <textarea id="inp-desc" rows="3"></textarea>
+                        <textarea id="inp-desc" rows="3" placeholder="Kort historie eller notater..."></textarea>
                     </div>
                 </div>
 
                 <div id="form-existing" class="hidden">
-                    <input type="text" id="search-existing" placeholder="Søk..." style="width:100%;margin-bottom:0.5rem;">
+                    <input type="text" id="search-existing" placeholder="Søk etter navn..."
+                        style="width:100%;margin-bottom:0.8rem;">
                     <div id="existing-list" class="person-select-list"></div>
                     <input type="hidden" id="selected-existing-id">
                 </div>
 
-                <div style="margin-top:1rem;">
-                    <button id="btn-save" class="btn-primary full-width">Lagre</button>
+                <div style="margin-top:1.5rem;">
+                    <button id="btn-save" class="btn-primary full-width">Lagre Person</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Leaflet Kart JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- Linker til hoved-scriptet -->
     <script type="module" src="script.js"></script>
 </body>
+
 </html>
