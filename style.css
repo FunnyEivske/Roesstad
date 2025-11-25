@@ -35,54 +35,6 @@
     /* --- SHADOWS & EFFECTS --- */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --blur-glass: blur(12px);
-
-    /* --- SPACING & RADIUS --- */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1.5rem;
-}
-
-/* --- GLOBAL RESET --- */
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: 'Outfit', sans-serif;
-    background-color: var(--color-bg);
-    color: var(--color-text-main);
-    height: 100vh;
-    overflow: hidden;
-    /* Subtle background pattern */
-    background-image:
-        radial-gradient(at 0% 0%, rgba(15, 47, 36, 0.05) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(217, 119, 6, 0.05) 0px, transparent 50%);
-}
-
-/* --- UTILITIES --- */
-.hidden {
-    display: none !important;
-}
-
-.full-width {
-    width: 100%;
-}
-
-.flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* --- LOGIN PAGE --- */
-body.login-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
 }
 
 .login-container {
@@ -449,21 +401,6 @@ body.login-page {
 
 .btn-slot:hover {
     border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: white;
-}
-
-/* Map & Timeline */
-#map-container {
-    width: 100%;
-    height: 100%;
-    background: #e2e8f0;
-}
-
-.timeline-wrapper {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 3rem 1rem;
     overflow-y: auto;
     height: 100%;
 }
