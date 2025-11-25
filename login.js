@@ -2,46 +2,91 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { firebaseConfig } from "./config.js";
 
-// Init
+// --- INIT ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Håndter klikk på Logg Inn
+// --- DOM ELEMENTS ---
+const form = document.getElementById('login-form');
+const emailInput = document.getElementById('inp-email');
+const passwordInput = document.getElementById('inp-password');
 const loginBtn = document.getElementById('btn-login');
+const errorMsg = document.getElementById('error-msg');
 
-if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
-        const email = document.getElementById('inp-email').value;
-        const password = document.getElementById('inp-password').value;
-        const msg = document.getElementById('error-msg');
+// --- LOGIN LOGIC ---
+if (form) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        // Enkel sjekk at feltene ikke er tomme
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
         if (!email || !password) {
-            msg.textContent = "Du må skrive inn både e-post og passord.";
+            showError("Vennligst fyll ut både e-post og passord.");
             return;
         }
 
-        loginBtn.textContent = "Sjekker...";
-        msg.textContent = "";
+        setLoading(true);
 
         try {
-            // Prøver å logge inn med e-post og passord
             await signInWithEmailAndPassword(auth, email, password);
-
-            // Suksess -> Gå til hovedsiden
+            // Redirect on success
             window.location.href = "Røsstad.html";
-
         } catch (error) {
-            console.error(error);
-            // Gi en forståelig feilmelding
-            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                msg.textContent = "Feil e-post eller passord.";
-            } else if (error.code === 'auth/too-many-requests') {
-                msg.textContent = "For mange forsøk. Prøv igjen senere.";
-            } else {
-                msg.textContent = "Feil: " + error.message;
-            }
-            loginBtn.textContent = "Logg Inn";
+            console.error("Login error:", error);
+            handleError(error);
+            setLoading(false);
         }
     });
 }
+
+function setLoading(isLoading) {
+    if (isLoading) {
+        loginBtn.textContent = "Logger inn...";
+        loginBtn.disabled = true;
+        errorMsg.textContent = "";
+    } else {
+        loginBtn.textContent = "Logg Inn";
+        loginBtn.disabled = false;
+    }
+}
+
+function handleError(error) {
+    let message = "En ukjent feil oppstod.";
+
+    switch (error.code) {
+        case 'auth/invalid-credential':
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+            message = "Feil e-post eller passord.";
+            break;
+        case 'auth/too-many-requests':
+            message = "For mange forsøk. Vennligst vent litt og prøv igjen.";
+            break;
+        case 'auth/invalid-email':
+            message = "Ugyldig e-postadresse.";
+            break;
+    }
+
+    showError(message);
+}
+
+function showError(msg) {
+    errorMsg.textContent = msg;
+    // Shake animation effect
+    const container = document.querySelector('.login-container');
+    container.style.animation = 'none';
+    container.offsetHeight; /* trigger reflow */
+    container.style.animation = 'shake 0.5s';
+}
+
+// Add shake keyframes dynamically
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+`;
+document.head.appendChild(style);

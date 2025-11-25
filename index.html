@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="no">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logg Inn - Røsstad Arkivet</title>
+    <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="login-page">
 
-    <div class="login-box">
-        <i class="ph-fill ph-tree-evergreen logo-icon"></i>
-        
-        <h2>Røsstad Arkivet</h2>
-        <p style="margin-bottom: 2rem; color: rgba(255,255,255,0.8); font-weight: 300;">Logg inn for å se familiens historie</p>
-        
-        <div style="margin-bottom: 1rem;">
-            <input type="email" id="inp-email" class="login-input" placeholder="E-postadresse">
-        </div>
+    <div class="login-container">
+        <i class="ph-fill ph-tree-evergreen login-logo"></i>
 
-        <div style="margin-bottom: 2rem;">
-            <input type="password" id="inp-password" class="login-input" placeholder="Passord">
-        </div>
-        
-        <button id="btn-login" class="btn-primary full-width" style="font-size: 1.1rem; padding: 1rem;">Logg Inn</button>
-        
-        <p id="error-msg" class="error-msg"></p>
+        <h1 class="login-title">Røsstad Arkivet</h1>
+        <p class="login-subtitle">Logg inn for å utforske familiens historie</p>
+
+        <form id="login-form" onsubmit="event.preventDefault();">
+            <input type="email" id="inp-email" class="input-field" placeholder="E-postadresse" required
+                autocomplete="email">
+            <input type="password" id="inp-password" class="input-field" placeholder="Passord" required
+                autocomplete="current-password">
+
+            <button type="submit" id="btn-login" class="btn-primary">Logg Inn</button>
+        </form>
+
+        <div id="error-msg" class="error-message"></div>
     </div>
 
     <script type="module" src="login.js"></script>
 </body>
+
 </html>
