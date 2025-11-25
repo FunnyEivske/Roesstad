@@ -89,6 +89,7 @@ addMemberBtn.addEventListener('click', () => {
     document.getElementById('modal-title').textContent = "Legg til person";
     memberForm.reset();
     document.getElementById('member-id').value = '';
+    populateDropdowns(); // Populate relationships
     memberModal.style.display = 'flex';
 });
 
@@ -118,19 +119,67 @@ function loadFamilyData() {
     });
 }
 
+function populateDropdowns(excludeId = null) {
+    const motherSelect = document.getElementById('motherId');
+    const fatherSelect = document.getElementById('fatherId');
+    const spouseSelect = document.getElementById('spouseId');
+
+    // Clear existing options
+    [motherSelect, fatherSelect, spouseSelect].forEach(select => {
+        select.innerHTML = '<option value="">Ingen valgt</option>';
+    });
+
+    familyData.forEach(member => {
+        if (member.id === excludeId) return; // Don't link to self
+
+        const option = document.createElement('option');
+        option.value = member.id;
+        option.textContent = `${member.firstName} ${member.lastName}`;
+
+        // Add to appropriate dropdowns based on gender/logic
+        // Spouse can be anyone for now
+        spouseSelect.appendChild(option.cloneNode(true));
+
+        if (member.gender === 'female') {
+            motherSelect.appendChild(option.cloneNode(true));
+        } else if (member.gender === 'male') {
+            fatherSelect.appendChild(option.cloneNode(true));
+        } else {
+            // If gender undefined, maybe add to both or neither? 
+            // For now, let's add to both to be safe if data is missing
+            motherSelect.appendChild(option.cloneNode(true));
+            fatherSelect.appendChild(option.cloneNode(true));
+        }
+    });
+}
+
 memberForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('member-id').value;
 
+    // Get gender value
+    const genderInputs = document.getElementsByName('gender');
+    let gender = null;
+    for (const input of genderInputs) {
+        if (input.checked) {
+            gender = input.value;
+            break;
+        }
+    }
+
     const memberData = {
         firstName: document.getElementById('firstName').value,
         lastName: document.getElementById('lastName').value,
+        gender: gender,
         birthDate: document.getElementById('birthDate').value,
         deathDate: document.getElementById('deathDate').value || null,
         location: document.getElementById('location').value,
         notes: document.getElementById('notes').value,
-        // TODO: Handle lat/lng via Geocoding API or manual input later
-        // TODO: Handle relationships
+
+        // Relationships
+        motherId: document.getElementById('motherId').value || null,
+        fatherId: document.getElementById('fatherId').value || null,
+        spouseId: document.getElementById('spouseId').value || null
     };
 
     if (id) {
@@ -146,19 +195,20 @@ memberForm.addEventListener('submit', (e) => {
 
 function renderTree() {
     const container = document.getElementById('family-cards-container');
-    container.innerHTML = ''; // Clear current
+    container.innerHTML = '';
 
     // Simple grid layout for now (placeholder for complex tree algo)
-    // In a real tree, we'd calculate positions based on generations
-
     familyData.forEach((member, index) => {
         const card = document.createElement('div');
         card.className = 'family-card';
-        // Simple positioning for demo purposes
-        card.style.top = `${100 + (Math.floor(index / 5) * 150)}px`;
-        card.style.left = `${50 + ((index % 5) * 250)}px`;
+        // Simple positioning
+        card.style.top = `${100 + (Math.floor(index / 5) * 180)}px`;
+        card.style.left = `${50 + ((index % 5) * 260)}px`;
+
+        const genderIcon = member.gender === 'male' ? '👨' : (member.gender === 'female' ? '👩' : '👤');
 
         card.innerHTML = `
+            <div class="card-avatar">${genderIcon}</div>
             <div class="card-name">${member.firstName} ${member.lastName}</div>
             <div class="card-dates">
                 ${new Date(member.birthDate).getFullYear()} - ${member.deathDate ? new Date(member.deathDate).getFullYear() : ''}
@@ -188,6 +238,23 @@ function openEditModal(member) {
     document.getElementById('deathDate').value = member.deathDate || '';
     document.getElementById('location').value = member.location || '';
     document.getElementById('notes').value = member.notes || '';
+
+    // Set Gender
+    const genderInputs = document.getElementsByName('gender');
+    for (const input of genderInputs) {
+        if (input.value === member.gender) {
+            input.checked = true;
+        }
+    }
+
+    // Populate dropdowns first (excluding self)
+    populateDropdowns(member.id);
+
+    // Set Relationships
+    document.getElementById('motherId').value = member.motherId || '';
+    document.getElementById('fatherId').value = member.fatherId || '';
+    document.getElementById('spouseId').value = member.spouseId || '';
+
     memberModal.style.display = 'flex';
 }
 

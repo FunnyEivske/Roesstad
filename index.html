@@ -5,15 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Røsstad Familietre</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdC0kSFC6auWxO5bttoclLv48i3F44OPY&callback=initMap"
         async defer></script>
 </head>
 
-<body class="dark-mode"> <!-- Default to dark mode as requested -->
+<body class="dark-mode">
 
-    <nav class="top-nav">
+    <nav class="top-nav glass">
         <div class="nav-brand">Røsstad Slekt</div>
         <div class="nav-tabs">
             <button class="nav-btn active" data-tab="tree">Familietre</button>
@@ -56,7 +59,7 @@
 
     <!-- Login Modal -->
     <div id="login-modal" class="modal">
-        <div class="modal-content login-box">
+        <div class="modal-content glass-panel login-box">
             <h2>Velkommen til Røsstad</h2>
             <p>Vennligst logg inn for å se slektstreet.</p>
             <form id="login-form">
@@ -70,19 +73,31 @@
 
     <!-- Add/Edit Member Modal -->
     <div id="member-modal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content glass-panel">
             <span class="close-modal">&times;</span>
             <h2 id="modal-title">Legg til person</h2>
             <form id="member-form">
                 <input type="hidden" id="member-id">
-                <div class="form-group">
-                    <label>Fornavn</label>
-                    <input type="text" id="firstName" required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fornavn</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Etternavn</label>
+                        <input type="text" id="lastName" required>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Etternavn</label>
-                    <input type="text" id="lastName" required>
+                    <label>Kjønn</label>
+                    <div class="radio-group">
+                        <label class="radio-label"><input type="radio" name="gender" value="male" required> Mann</label>
+                        <label class="radio-label"><input type="radio" name="gender" value="female"> Kvinne</label>
+                    </div>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Fødselsdato</label>
@@ -93,15 +108,40 @@
                         <input type="date" id="deathDate">
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Sted (for kart)</label>
                     <input type="text" id="location" placeholder="F.eks. Høvåg">
                 </div>
+
+                <!-- Relationships -->
+                <div class="form-section">
+                    <h3>Relasjoner</h3>
+                    <div class="form-group">
+                        <label>Mor</label>
+                        <select id="motherId">
+                            <option value="">Ingen valgt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Far</label>
+                        <select id="fatherId">
+                            <option value="">Ingen valgt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ektefelle/Samboer</label>
+                        <select id="spouseId">
+                            <option value="">Ingen valgt</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Notater</label>
-                    <textarea id="notes" rows="4"></textarea>
+                    <textarea id="notes" rows="3"></textarea>
                 </div>
-                <!-- Relationship fields would go here (simplified for now) -->
+
                 <button type="submit" class="primary-btn">Lagre</button>
             </form>
         </div>
