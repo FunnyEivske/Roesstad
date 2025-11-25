@@ -1,6 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 
 // --- INIT ---
@@ -48,7 +48,7 @@ function startDataListener() {
         
         // Hvis vi ikke har valgt en person å fokusere på ennå:
         if (!focusPersonId && people.length > 0) {
-            // Prøv å finne "Eivind" eller "Meg" som startperson
+            // Prøv å finne "Eivind" eller "Meg" som startperson, ellers ta den første
             const me = people.find(p => p.name && (p.name.toLowerCase().includes('eivind') || p.name.toLowerCase() === 'meg'));
             focusPersonId = me ? me.id : people[0].id;
         }
