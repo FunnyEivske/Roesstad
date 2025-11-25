@@ -31,7 +31,7 @@ if (form) {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             // Redirect on success
-            window.location.href = "Røsstad.html";
+            window.location.href = "app.html";
         } catch (error) {
             console.error("Login error:", error);
             handleError(error);

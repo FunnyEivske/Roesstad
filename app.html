@@ -36,6 +36,9 @@
 
             <!-- CONTROLS -->
             <div class="header-controls">
+                <button id="btn-help" class="icon-btn" title="Hjelp"><i class="ph ph-question"></i></button>
+                <div style="width:1px; height:24px; background:#cbd5e1; margin:0 0.5rem;"></div>
+
                 <button id="btn-zoom-out" class="icon-btn" title="Zoom ut"><i class="ph ph-minus-circle"></i></button>
                 <span id="zoom-display"
                     style="font-size:0.9rem; font-weight:600; width:40px; text-align:center;">100%</span>
@@ -73,10 +76,15 @@
                 </div>
             </div>
 
+            <!-- FLOATING ACTION BUTTON (FAB) -->
+            <button id="fab-add" class="fab-btn" title="Legg til person">
+                <i class="ph-bold ph-plus"></i>
+            </button>
+
         </main>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL: ADD PERSON -->
     <div id="modal-overlay" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -139,6 +147,29 @@
             </div>
 
             <button id="btn-save" class="btn-primary" style="margin-top:1rem;">Lagre</button>
+        </div>
+    </div>
+
+    <!-- MODAL: HELP -->
+    <div id="modal-help" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Hjelp & Instruksjoner</h3>
+                <button id="btn-close-help" class="icon-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div style="line-height:1.6; color:var(--color-text-main);">
+                <p><strong>Velkommen til Røsstad Familietre!</strong></p>
+                <ul style="padding-left:1.2rem; margin-bottom:1.5rem;">
+                    <li><strong>Legg til person:</strong> Klikk på den store grønne pluss-knappen nede til høyre, eller
+                        bruk de små knappene på kortene.</li>
+                    <li><strong>Navigasjon:</strong> Bruk fanene øverst for å bytte mellom Tre, Kart og Tidslinje.</li>
+                    <li><strong>Zoom:</strong> Bruk pluss/minus knappene oppe til høyre for å zoome i treet.</li>
+                    <li><strong>Flytt treet:</strong> Du kan dra og slippe treet for å bevege deg rundt.</li>
+                </ul>
+                <p><em>Tips: Legg til et sted (f.eks. "Grimstad") for å se personen på kartet!</em></p>
+            </div>
+            <button class="btn-primary"
+                onclick="document.getElementById('modal-help').classList.add('hidden')">Forstått</button>
         </div>
     </div>
 

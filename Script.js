@@ -21,13 +21,26 @@ const state = {
     map: null
 };
 
+// --- IMMEDIATE SETUP (UI Handlers) ---
+// This ensures buttons work even if Auth is slow
+setupTabs();
+setupZoom();
+setupModal();
+setupHelp();
+setupFAB();
+
 // --- AUTHENTICATION ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         state.user = user;
-        initApp();
+        startDataListener();
     } else {
-        window.location.href = "index.html";
+        // Redirect to login if not authenticated
+        // Note: In local development with file://, this might trigger unexpectedly.
+        // For now, we assume index.html is the login page.
+        if (!window.location.pathname.endsWith('index.html') && !window.location.pathname.endsWith('/')) {
+            window.location.href = "index.html";
+        }
     }
 });
 
@@ -35,9 +48,8 @@ document.getElementById('btn-logout')?.addEventListener('click', () => {
     signOut(auth).then(() => window.location.href = "index.html");
 });
 
-// --- APP LOGIC ---
-function initApp() {
-    // Start Data Listener
+// --- DATA LISTENER ---
+function startDataListener() {
     const q = query(collection(db, 'familyMembers'));
     onSnapshot(q, (snapshot) => {
         state.people = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -50,11 +62,6 @@ function initApp() {
 
         renderAll();
     });
-
-    // Setup Navigation
-    setupTabs();
-    setupZoom();
-    setupModal();
 }
 
 function renderAll() {
@@ -74,7 +81,8 @@ function setupTabs() {
             // Show View
             document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
             const viewId = `view-${btn.dataset.view}`;
-            document.getElementById(viewId).classList.remove('hidden');
+            const viewEl = document.getElementById(viewId);
+            if (viewEl) viewEl.classList.remove('hidden');
 
             // Special handling for Map resize
             if (btn.dataset.view === 'map' && state.map) {
@@ -97,7 +105,10 @@ function renderTree() {
     childrenRow.innerHTML = '';
 
     if (state.people.length === 0) {
-        focusRow.innerHTML = `<button class="btn-primary" onclick="window.openModal('create-first')">Start familietreet</button>`;
+        focusRow.innerHTML = `<div style="text-align:center; color:var(--color-text-muted);">
+            <p>Ingen personer i treet ennå.</p>
+            <p>Klikk på <i class="ph-bold ph-plus-circle" style="color:var(--color-primary);"></i> nede til høyre for å starte!</p>
+        </div>`;
         return;
     }
 
@@ -203,6 +214,9 @@ function createSlot(person, label, action) {
 // --- MAP RENDERER ---
 function renderMap() {
     if (!state.map) {
+        const mapContainer = document.getElementById('map-container');
+        if (!mapContainer) return;
+
         state.map = L.map('map-container').setView([65.0, 13.0], 5);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -274,18 +288,21 @@ function renderTimeline() {
 function setupModal() {
     window.openModal = (action) => {
         state.modal.action = action;
-        document.getElementById('modal-overlay').classList.remove('hidden');
+        const overlay = document.getElementById('modal-overlay');
+        if (overlay) overlay.classList.remove('hidden');
 
         // Reset Form
         document.querySelectorAll('.input-field').forEach(i => i.value = '');
 
         // Set Title
         const title = document.getElementById('modal-title');
-        if (action === 'add-parent-m') title.textContent = "Legg til Far";
-        else if (action === 'add-parent-f') title.textContent = "Legg til Mor";
-        else if (action === 'add-child') title.textContent = "Legg til Barn";
-        else if (action === 'add-partner') title.textContent = "Legg til Partner";
-        else title.textContent = "Start Tre";
+        if (title) {
+            if (action === 'add-parent-m') title.textContent = "Legg til Far";
+            else if (action === 'add-parent-f') title.textContent = "Legg til Mor";
+            else if (action === 'add-child') title.textContent = "Legg til Barn";
+            else if (action === 'add-partner') title.textContent = "Legg til Partner";
+            else title.textContent = "Legg til Person";
+        }
 
         // Default Mode
         window.setModalMode('new');
@@ -300,11 +317,13 @@ function setupModal() {
         document.getElementById('form-existing').classList.toggle('hidden', mode !== 'existing');
     };
 
-    document.getElementById('btn-close-modal').onclick = () => {
+    const closeBtn = document.getElementById('btn-close-modal');
+    if (closeBtn) closeBtn.onclick = () => {
         document.getElementById('modal-overlay').classList.add('hidden');
     };
 
-    document.getElementById('btn-save').onclick = async () => {
+    const saveBtn = document.getElementById('btn-save');
+    if (saveBtn) saveBtn.onclick = async () => {
         const focusP = state.people.find(p => p.id === state.focusId);
         let targetId = null;
 
@@ -335,14 +354,18 @@ function setupModal() {
 
             const docRef = await addDoc(collection(db, 'familyMembers'), newPerson);
             targetId = docRef.id;
-            if (state.modal.action === 'create-first') state.focusId = targetId;
+
+            // If creating first person or using generic add
+            if (state.modal.action === 'create-first' || !state.focusId) {
+                state.focusId = targetId;
+            }
 
         } else {
             targetId = document.getElementById('selected-existing-id').value;
         }
 
         // Link Relations
-        if (focusP && targetId) {
+        if (focusP && targetId && state.modal.action !== 'create-first' && state.modal.action !== 'add-generic') {
             const col = collection(db, 'familyMembers');
             const updates = [];
 
@@ -365,6 +388,7 @@ function setupModal() {
 
 function renderExistingList() {
     const list = document.getElementById('existing-list');
+    if (!list) return;
     list.innerHTML = '';
     state.people.filter(p => p.id !== state.focusId).forEach(p => {
         const div = document.createElement('div');
@@ -385,17 +409,42 @@ function setupZoom() {
     const grid = document.getElementById('tree-grid');
     const display = document.getElementById('zoom-display');
 
-    document.getElementById('btn-zoom-in').onclick = () => {
+    const btnIn = document.getElementById('btn-zoom-in');
+    if (btnIn) btnIn.onclick = () => {
         state.scale += 0.1;
         updateZoom();
     };
-    document.getElementById('btn-zoom-out').onclick = () => {
+
+    const btnOut = document.getElementById('btn-zoom-out');
+    if (btnOut) btnOut.onclick = () => {
         if (state.scale > 0.4) state.scale -= 0.1;
         updateZoom();
     };
 
     function updateZoom() {
-        grid.style.transform = `scale(${state.scale})`;
-        display.textContent = Math.round(state.scale * 100) + '%';
+        if (grid) grid.style.transform = `scale(${state.scale})`;
+        if (display) display.textContent = Math.round(state.scale * 100) + '%';
+    }
+}
+
+// --- HELP ---
+function setupHelp() {
+    const btn = document.getElementById('btn-help');
+    const modal = document.getElementById('modal-help');
+    const close = document.getElementById('btn-close-help');
+
+    if (btn && modal) {
+        btn.onclick = () => modal.classList.remove('hidden');
+    }
+    if (close && modal) {
+        close.onclick = () => modal.classList.add('hidden');
+    }
+}
+
+// --- FAB ---
+function setupFAB() {
+    const fab = document.getElementById('fab-add');
+    if (fab) {
+        fab.onclick = () => window.openModal('add-generic');
     }
 }
