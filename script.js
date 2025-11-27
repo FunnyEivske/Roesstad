@@ -443,10 +443,24 @@ window.initMap = function () {
     // Add markers for family members
     familyData.forEach(member => {
         if (member.lat && member.lng) {
-            new google.maps.Marker({
+            const marker = new google.maps.Marker({
                 position: { lat: member.lat, lng: member.lng },
                 map: map,
                 title: `${member.firstName} ${member.lastName}`
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="color: black; padding: 5px;">
+                        <strong>${member.firstName} ${member.lastName}</strong><br>
+                        ${member.location}<br>
+                        <small>${new Date(member.birthDate).getFullYear()}</small>
+                    </div>
+                `
+            });
+
+            marker.addListener('click', () => {
+                infoWindow.open(map, marker);
             });
         }
     });
