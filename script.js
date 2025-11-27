@@ -197,36 +197,149 @@ function renderTree() {
     const container = document.getElementById('family-cards-container');
     container.innerHTML = '';
 
-    // Simple grid layout for now (placeholder for complex tree algo)
-    familyData.forEach((member, index) => {
-        const card = document.createElement('div');
-        card.className = 'family-card';
-        // Simple positioning
-        card.style.top = `${100 + (Math.floor(index / 5) * 180)}px`;
-        card.style.left = `${50 + ((index % 5) * 260)}px`;
+    if (familyData.length === 0) return;
 
-        const genderIcon = member.gender === 'male' ? '👨' : (member.gender === 'female' ? '👩' : '👤');
+    // 1. Calculate Generations
+    const memberMap = new Map(familyData.map(m => [m.id, m]));
+    const generations = {};
+    const processed = new Set();
 
-        card.innerHTML = `
-            <div class="card-avatar">${genderIcon}</div>
-            <div class="card-name">${member.firstName} ${member.lastName}</div>
-            <div class="card-dates">
-                ${new Date(member.birthDate).getFullYear()} - ${member.deathDate ? new Date(member.deathDate).getFullYear() : ''}
-            </div>
-        `;
+    function getGeneration(id, depth = 0) {
+        if (depth > 20) return 0; // Prevent infinite recursion
+        const member = memberMap.get(id);
+        if (!member) return 0;
 
-        card.addEventListener('click', () => openEditModal(member));
-        container.appendChild(card);
+        let parentGen = -1;
+        if (member.motherId) parentGen = Math.max(parentGen, getGeneration(member.motherId, depth + 1));
+        if (member.fatherId) parentGen = Math.max(parentGen, getGeneration(member.fatherId, depth + 1));
+
+        return parentGen + 1;
+    }
+
+    familyData.forEach(member => {
+        const gen = getGeneration(member.id);
+        if (!generations[gen]) generations[gen] = [];
+        generations[gen].push(member);
     });
 
-    drawLines();
+    // 2. Position Members
+    const cardWidth = 220;
+    const cardHeight = 100; // Approx
+    const gapX = 40;
+    const gapY = 150;
+    const startY = 50;
+
+    // Sort generations to ensure we process 0, 1, 2...
+    const genKeys = Object.keys(generations).sort((a, b) => a - b);
+
+    // Store positions for line drawing
+    const positions = {}; // id -> {x, y, width, height}
+
+    genKeys.forEach(genKey => {
+        const members = generations[genKey];
+        // Sort members to try and keep spouses together (simple heuristic)
+        members.sort((a, b) => {
+            if (a.spouseId === b.id) return -1;
+            return 0;
+        });
+
+        // Center the row relative to the container
+        // We'll use a fixed large width for the container to allow scrolling
+        // Let's assume center is 1000px
+        const rowWidth = members.length * (cardWidth + gapX) - gapX;
+        let startX = Math.max(50, 1000 - rowWidth / 2);
+
+        members.forEach((member, index) => {
+            const x = startX + (index * (cardWidth + gapX));
+            const y = startY + (genKey * gapY);
+
+            positions[member.id] = { x, y, width: cardWidth, height: cardHeight };
+
+            const card = document.createElement('div');
+            card.className = 'family-card';
+            card.style.left = `${x}px`;
+            card.style.top = `${y}px`;
+
+            const genderIcon = member.gender === 'male' ? '👨' : (member.gender === 'female' ? '👩' : '👤');
+
+            card.innerHTML = `
+                <div class="card-avatar">${genderIcon}</div>
+                <div class="card-name">${member.firstName} ${member.lastName}</div>
+                <div class="card-dates">
+                    ${new Date(member.birthDate).getFullYear()} - ${member.deathDate ? new Date(member.deathDate).getFullYear() : ''}
+                </div>
+            `;
+
+            card.addEventListener('click', () => openEditModal(member));
+            container.appendChild(card);
+        });
+    });
+
+    // 3. Draw Lines
+    drawLines(positions);
 }
 
-function drawLines() {
-    // Placeholder for SVG line drawing logic
+function drawLines(positions) {
     const svg = document.getElementById('relationship-lines');
     svg.innerHTML = '';
-    // Logic to draw lines between parent/child/spouse would go here
+
+    // Set SVG size to match content
+    const maxX = Math.max(...Object.values(positions).map(p => p.x + p.width)) + 100;
+    const maxY = Math.max(...Object.values(positions).map(p => p.y + p.height)) + 100;
+
+    svg.setAttribute('width', Math.max(2000, maxX)); // Min width 2000 for scrolling
+    svg.setAttribute('height', Math.max(1000, maxY));
+
+    familyData.forEach(member => {
+        const pos = positions[member.id];
+        if (!pos) return;
+
+        // Parent Connections
+        [member.motherId, member.fatherId].forEach(parentId => {
+            if (parentId && positions[parentId]) {
+                const parentPos = positions[parentId];
+
+                // Draw line from bottom of parent to top of child
+                const x1 = parentPos.x + parentPos.width / 2;
+                const parentBottom = parentPos.y + 120; // Approx bottom of card
+
+                const x2 = pos.x + pos.width / 2;
+                const y2 = pos.y;
+
+                // Bezier curve
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = `M ${x1} ${parentBottom} C ${x1} ${parentBottom + 50}, ${x2} ${y2 - 50}, ${x2} ${y2}`;
+
+                path.setAttribute("d", d);
+                path.setAttribute("stroke", "#88a090"); // Moss color
+                path.setAttribute("stroke-width", "2");
+                path.setAttribute("fill", "none");
+                svg.appendChild(path);
+            }
+        });
+
+        // Spouse Connection
+        if (member.spouseId && positions[member.spouseId]) {
+            const spousePos = positions[member.spouseId];
+            // Only draw once (e.g., if id < spouseId)
+            if (member.id < member.spouseId) {
+                const x1 = pos.x + pos.width;
+                const y1 = pos.y + 60; // Middle of card approx
+                const x2 = spousePos.x;
+                const y2 = spousePos.y + 60;
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = `M ${x1} ${y1} L ${x2} ${y2}`;
+
+                path.setAttribute("d", d);
+                path.setAttribute("stroke", "#1a472a"); // Forest color
+                path.setAttribute("stroke-width", "2");
+                path.setAttribute("stroke-dasharray", "5,5"); // Dashed for spouse
+                path.setAttribute("fill", "none");
+                svg.appendChild(path);
+            }
+        }
+    });
 }
 
 function openEditModal(member) {
