@@ -196,6 +196,25 @@ memberForm.addEventListener('submit', (e) => {
     }
 });
 
+// Geocoding
+document.getElementById('geocodeBtn').addEventListener('click', () => {
+    const location = document.getElementById('location').value;
+    if (!location) return;
+
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'address': location }, (results, status) => {
+        if (status === 'OK') {
+            const lat = results[0].geometry.location.lat();
+            const lng = results[0].geometry.location.lng();
+
+            document.getElementById('lat').value = lat.toFixed(6);
+            document.getElementById('lng').value = lng.toFixed(6);
+        } else {
+            alert('Kunne ikke finne koordinater for dette stedet: ' + status);
+        }
+    });
+});
+
 // --- Feature: Family Tree ---
 
 function renderTree() {
@@ -490,3 +509,78 @@ function renderHistory() {
         list.appendChild(item);
     });
 }
+
+// --- Feature: Family Tree Navigation (Pan/Zoom) ---
+
+let treeState = {
+    scale: 1,
+    panning: false,
+    pointX: 0,
+    pointY: 0,
+    startX: 0,
+    startY: 0
+};
+
+function setupPanZoom() {
+    const treeTab = document.getElementById('tree-tab');
+    const treeContainer = document.getElementById('tree-container');
+
+    // Zoom (Wheel)
+    treeTab.addEventListener('wheel', (e) => {
+        e.preventDefault();
+
+        const xs = (e.clientX - treeState.pointX) / treeState.scale;
+        const ys = (e.clientY - treeState.pointY) / treeState.scale;
+
+        const delta = -e.deltaY;
+        (delta > 0) ? (treeState.scale *= 1.1) : (treeState.scale /= 1.1);
+
+        // Limit zoom
+        treeState.scale = Math.min(Math.max(0.1, treeState.scale), 5);
+
+        treeState.pointX = e.clientX - xs * treeState.scale;
+        treeState.pointY = e.clientY - ys * treeState.scale;
+
+        setTransform();
+    });
+
+    // Pan (Mouse)
+    treeTab.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.family-card') || e.target.closest('.fab')) return; // Don't drag if clicking card/button
+
+        e.preventDefault();
+        treeState.startX = e.clientX - treeState.pointX;
+        treeState.startY = e.clientY - treeState.pointY;
+        treeState.panning = true;
+    });
+
+    treeTab.addEventListener('mousemove', (e) => {
+        if (!treeState.panning) return;
+        e.preventDefault();
+        treeState.pointX = e.clientX - treeState.startX;
+        treeState.pointY = e.clientY - treeState.startY;
+        setTransform();
+    });
+
+    treeTab.addEventListener('mouseup', () => {
+        treeState.panning = false;
+    });
+
+    treeTab.addEventListener('mouseleave', () => {
+        treeState.panning = false;
+    });
+
+    function setTransform() {
+        treeContainer.style.transform = `translate(${treeState.pointX}px, ${treeState.pointY}px) scale(${treeState.scale})`;
+    }
+
+    // Initial center (approx)
+    treeState.pointX = (window.innerWidth - 1000) / 2; // Assuming 1000px content width
+    treeState.pointY = 50;
+    setTransform();
+}
+
+// Initialize PanZoom when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    setupPanZoom();
+});

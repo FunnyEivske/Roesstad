@@ -377,3 +377,24 @@ input[type="radio"] {
     width: auto;
     margin: 0;
 }
+
+/* Pan and Zoom Styles */
+#tree-tab {
+    overflow: hidden; /* Hide scrollbars, we use custom pan */
+    position: relative;
+    cursor: grab;
+}
+
+#tree-tab:active {
+    cursor: grabbing;
+}
+
+#tree-container {
+    transform-origin: 0 0; /* Zoom from top-left */
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Ensure it has size */
+    min-width: 100%; 
+    min-height: 100%;
+}
