@@ -124,177 +124,45 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <!DOCTYPE html>
-                        <html lang="no">
+                        <label>Far</label>
+                        <select id="fatherId">
+                            <option value="">Ingen valgt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ektefelle/Samboer</label>
+                        <select id="spouseId">
+                            <option value="">Ingen valgt</option>
+                        </select>
+                    </div>
+                </div>
 
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Røsstad Familietre</title>
-                            <link rel="preconnect" href="https://fonts.googleapis.com">
-                            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap"
-                                rel="stylesheet">
-                            <link rel="stylesheet" href="style.css">
-                            <!-- Google Maps API -->
-                            <script
-                                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdC0kSFC6auWxO5bttoclLv48i3F44OPY&callback=initMap"
-                                async defer></script>
-                        </head>
+                <div class="form-group">
+                    <label>Notater</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
 
-                        <body class="dark-mode">
+                <div class="form-section">
+                    <h3>Barn</h3>
+                    <ul id="children-list" style="list-style: none; padding: 0; margin-bottom: 10px;">
+                        <!-- Populated by JS -->
+                    </ul>
+                    <button type="button" id="addChildBtn" class="text-btn"
+                        style="color: var(--color-forest); border-color: var(--color-forest); font-size: 0.9rem;">+ Legg
+                        til barn</button>
+                </div>
 
-                            <nav class="top-nav glass">
-                                <div class="nav-brand">Røsstad Slekt</div>
-                                <div class="nav-tabs">
-                                    <button class="nav-btn active" data-tab="tree">Familietre</button>
-                                    <button class="nav-btn" data-tab="map">Kart</button>
-                                    <button class="nav-btn" data-tab="history">Historie</button>
-                                </div>
-                                <div class="nav-controls">
-                                    <button id="darkModeToggle" class="icon-btn" title="Bytt lys/mørk modus">🌙</button>
-                                    <button id="logoutBtn" class="text-btn" style="display: none;">Logg ut</button>
-                                </div>
-                            </nav>
+                <button type="submit" class="primary-btn">Lagre</button>
+            </form>
+        </div>
+    </div>
 
-                            <main id="main-content">
-                                <!-- Tab 1: Family Tree -->
-                                <section id="tree-tab" class="tab-content active">
-                                    <div id="tree-container">
-                                        <svg id="relationship-lines"></svg>
-                                        <div id="family-cards-container">
-                                            <!-- Cards will be injected here -->
-                                        </div>
-                                    </div>
-                                    <button id="addMemberBtn" class="fab" title="Legg til person">+</button>
-                                </section>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-                                <!-- Tab 2: Map -->
-                                <section id="map-tab" class="tab-content">
-                                    <div id="map"></div>
-                                </section>
+    <script src="script.js"></script>
+</body>
 
-                                <!-- Tab 3: History -->
-                                <section id="history-tab" class="tab-content">
-                                    <div class="history-container">
-                                        <h2>Slektshistorie</h2>
-                                        <ul id="history-list">
-                                            <!-- History items will be injected here -->
-                                        </ul>
-                                    </div>
-                                </section>
-                            </main>
-
-                            <!-- Login Modal -->
-                            <div id="login-modal" class="modal">
-                                <div class="modal-content glass-panel login-box">
-                                    <h2>Velkommen til Røsstad</h2>
-                                    <p>Vennligst logg inn for å se slektstreet.</p>
-                                    <form id="login-form">
-                                        <input type="email" id="email" placeholder="E-post" required>
-                                        <input type="password" id="password" placeholder="Passord" required>
-                                        <button type="submit" class="primary-btn">Logg inn</button>
-                                    </form>
-                                    <p id="login-error" class="error-msg"></p>
-                                </div>
-                            </div>
-
-                            <!-- Add/Edit Member Modal -->
-                            <div id="member-modal" class="modal" style="display: none;">
-                                <div class="modal-content glass-panel">
-                                    <span class="close-modal">&times;</span>
-                                    <h2 id="modal-title">Legg til person</h2>
-                                    <form id="member-form">
-                                        <input type="hidden" id="member-id">
-
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>Fornavn</label>
-                                                <input type="text" id="firstName" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Etternavn</label>
-                                                <input type="text" id="lastName" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Kjønn</label>
-                                            <div class="radio-group">
-                                                <label class="radio-label"><input type="radio" name="gender"
-                                                        value="male" required> Mann</label>
-                                                <label class="radio-label"><input type="radio" name="gender"
-                                                        value="female"> Kvinne</label>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>Fødselsdato</label>
-                                                <input type="date" id="birthDate" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Dødsdato (valgfritt)</label>
-                                                <input type="date" id="deathDate">
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Sted (for kart)</label>
-                                            <input type="text" id="location" placeholder="F.eks. Høvåg">
-                                        </div>
-
-                                        <!-- Relationships -->
-                                        <div class="form-section">
-                                            <h3>Relasjoner</h3>
-                                            <div class="form-group">
-                                                <label>Mor</label>
-                                                <select id="motherId">
-                                                    <option value="">Ingen valgt</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Far</label>
-                                                <select id="fatherId">
-                                                    <option value="">Ingen valgt</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Ektefelle/Samboer</label>
-                                                <select id="spouseId">
-                                                    <option value="">Ingen valgt</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Notater</label>
-                                            <textarea id="notes" rows="3"></textarea>
-                                        </div>
-
-                                        <div class="form-section">
-                                            <h3>Barn</h3>
-                                            <ul id="children-list"
-                                                style="list-style: none; padding: 0; margin-bottom: 10px;">
-                                                <!-- Populated by JS -->
-                                            </ul>
-                                            <button type="button" id="addChildBtn" class="text-btn"
-                                                style="color: var(--color-forest); border-color: var(--color-forest); font-size: 0.9rem;">+
-                                                Legg til barn</button>
-                                        </div>
-
-                                        <button type="submit" class="primary-btn">Lagre</button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Firebase SDKs -->
-                            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-                            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-                            <script
-                                src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-                            <script src="script.js"></script>
-                        </body>
-
-                        </html>
+</html>
