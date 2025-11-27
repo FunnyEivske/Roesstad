@@ -96,67 +96,47 @@
 
                 <div class="form-group">
                     <label>Kjønn</label>
-                    <div class="radio-group">
-                        <label class="radio-label"><input type="radio" name="gender" value="male" required> Mann</label>
-                        <label class="radio-label"><input type="radio" name="gender" value="female"> Kvinne</label>
-                    </div>
-                </div>
 
-                <div class="form-row">
+                    <!-- Relationships -->
+                    <div class="form-section">
+                        <h3>Relasjoner</h3>
+                        <div class="form-group">
+                            <label>Mor</label>
+                            <select id="motherId">
+                                <option value="">Ingen valgt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Far</label>
+                            <select id="fatherId">
+                                <option value="">Ingen valgt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ektefelle/Samboer</label>
+                            <select id="spouseId">
+                                <option value="">Ingen valgt</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label>Fødselsdato</label>
-                        <input type="date" id="birthDate" required>
+                        <label>Notater</label>
+                        <textarea id="notes" rows="3"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Dødsdato (valgfritt)</label>
-                        <input type="date" id="deathDate">
+
+                    <div class="form-section">
+                        <h3>Barn</h3>
+                        <ul id="children-list" style="list-style: none; padding: 0; margin-bottom: 10px;">
+                            <!-- Populated by JS -->
+                        </ul>
+                        <button type="button" id="addChildBtn" class="text-btn"
+                            style="color: var(--color-forest); border-color: var(--color-forest); font-size: 0.9rem;">+
+                            Legg
+                            til barn</button>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Sted (for kart)</label>
-                    <input type="text" id="location" placeholder="F.eks. Høvåg">
-                </div>
-
-                <!-- Relationships -->
-                <div class="form-section">
-                    <h3>Relasjoner</h3>
-                    <div class="form-group">
-                        <label>Mor</label>
-                        <select id="motherId">
-                            <option value="">Ingen valgt</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Far</label>
-                        <select id="fatherId">
-                            <option value="">Ingen valgt</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Ektefelle/Samboer</label>
-                        <select id="spouseId">
-                            <option value="">Ingen valgt</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Notater</label>
-                    <textarea id="notes" rows="3"></textarea>
-                </div>
-
-                <div class="form-section">
-                    <h3>Barn</h3>
-                    <ul id="children-list" style="list-style: none; padding: 0; margin-bottom: 10px;">
-                        <!-- Populated by JS -->
-                    </ul>
-                    <button type="button" id="addChildBtn" class="text-btn"
-                        style="color: var(--color-forest); border-color: var(--color-forest); font-size: 0.9rem;">+ Legg
-                        til barn</button>
-                </div>
-
-                <button type="submit" class="primary-btn">Lagre</button>
+                    <button type="submit" class="primary-btn">Lagre</button>
             </form>
         </div>
     </div>

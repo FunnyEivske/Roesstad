@@ -152,6 +152,7 @@ function populateDropdowns(excludeId = null) {
         } else {
             // If gender undefined, maybe add to both or neither? 
             // For now, let's add to both to be safe if data is missing
+
             if (motherSelect) motherSelect.appendChild(option.cloneNode(true));
             if (fatherSelect) fatherSelect.appendChild(option.cloneNode(true));
         }
@@ -162,37 +163,34 @@ memberForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('member-id').value;
 
-    // Get gender value
-    const genderInputs = document.getElementsByName('gender');
-    let gender = null;
-    for (const input of genderInputs) {
-        if (input.checked) {
-            gender = input.value;
-            break;
-        }
-    }
-
     const memberData = {
         firstName: document.getElementById('firstName').value,
         lastName: document.getElementById('lastName').value,
-        gender: gender,
-        birthDate: document.getElementById('birthDate').value,
-        deathDate: document.getElementById('deathDate').value || null,
-        location: document.getElementById('location').value,
-        notes: document.getElementById('notes').value,
-
-        // Relationships
-        motherId: document.getElementById('motherId').value || null,
-        fatherId: document.getElementById('fatherId').value || null,
-        spouseId: document.getElementById('spouseId').value || null
+        gender: document.querySelector('input[name="gender"]:checked')?.value,
+        birthDate: document.getElementById('birthDate')?.value,
+        deathDate: document.getElementById('deathDate')?.value,
+        location: document.getElementById('location')?.value,
+        notes: document.getElementById('notes')?.value,
+        motherId: document.getElementById('motherId').value,
+        fatherId: document.getElementById('fatherId').value,
+        spouseId: document.getElementById('spouseId').value
     };
+
+    // Remove undefined/empty fields
+    Object.keys(memberData).forEach(key => {
+        if (memberData[key] === undefined || memberData[key] === '') {
+            delete memberData[key];
+        }
+    });
 
     if (id) {
         db.collection('familyMembers').doc(id).update(memberData)
-            .then(() => memberModal.style.display = 'none');
+            .then(() => memberModal.style.display = 'none')
+            .catch(error => console.error("Error updating member:", error));
     } else {
         db.collection('familyMembers').add(memberData)
-            .then(() => memberModal.style.display = 'none');
+            .then(() => memberModal.style.display = 'none')
+            .catch(error => console.error("Error adding member:", error));
     }
 });
 
@@ -353,6 +351,7 @@ function openEditModal(member) {
     document.getElementById('firstName').value = member.firstName;
     document.getElementById('lastName').value = member.lastName;
     document.getElementById('birthDate').value = member.birthDate;
+    document.getElementById('birthYear').value = member.birthYear || (member.birthDate ? member.birthDate.split('-')[0] : '');
     document.getElementById('deathDate').value = member.deathDate || '';
     document.getElementById('location').value = member.location || '';
     document.getElementById('notes').value = member.notes || '';
