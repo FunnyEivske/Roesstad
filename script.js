@@ -89,6 +89,11 @@ addMemberBtn.addEventListener('click', () => {
     document.getElementById('modal-title').textContent = "Legg til person";
     memberForm.reset();
     document.getElementById('member-id').value = '';
+
+    // Clear children list
+    const childrenList = document.getElementById('children-list');
+    if (childrenList) childrenList.innerHTML = '<li style="opacity: 0.6; font-size: 0.9rem;">Ingen registrerte barn</li>';
+
     populateDropdowns(); // Populate relationships
     memberModal.style.display = 'flex';
 });
@@ -126,7 +131,7 @@ function populateDropdowns(excludeId = null) {
 
     // Clear existing options
     [motherSelect, fatherSelect, spouseSelect].forEach(select => {
-        select.innerHTML = '<option value="">Ingen valgt</option>';
+        if (select) select.innerHTML = '<option value="">Ingen valgt</option>';
     });
 
     familyData.forEach(member => {
@@ -138,17 +143,17 @@ function populateDropdowns(excludeId = null) {
 
         // Add to appropriate dropdowns based on gender/logic
         // Spouse can be anyone for now
-        spouseSelect.appendChild(option.cloneNode(true));
+        if (spouseSelect) spouseSelect.appendChild(option.cloneNode(true));
 
         if (member.gender === 'female') {
-            motherSelect.appendChild(option.cloneNode(true));
+            if (motherSelect) motherSelect.appendChild(option.cloneNode(true));
         } else if (member.gender === 'male') {
-            fatherSelect.appendChild(option.cloneNode(true));
+            if (fatherSelect) fatherSelect.appendChild(option.cloneNode(true));
         } else {
             // If gender undefined, maybe add to both or neither? 
             // For now, let's add to both to be safe if data is missing
-            motherSelect.appendChild(option.cloneNode(true));
-            fatherSelect.appendChild(option.cloneNode(true));
+            if (motherSelect) motherSelect.appendChild(option.cloneNode(true));
+            if (fatherSelect) fatherSelect.appendChild(option.cloneNode(true));
         }
     });
 }
@@ -367,6 +372,54 @@ function openEditModal(member) {
     document.getElementById('motherId').value = member.motherId || '';
     document.getElementById('fatherId').value = member.fatherId || '';
     document.getElementById('spouseId').value = member.spouseId || '';
+
+    // List Children
+    const childrenList = document.getElementById('children-list');
+    if (childrenList) {
+        childrenList.innerHTML = '';
+        const children = familyData.filter(m => m.motherId === member.id || m.fatherId === member.id);
+
+        if (children.length === 0) {
+            childrenList.innerHTML = '<li style="opacity: 0.6; font-size: 0.9rem;">Ingen registrerte barn</li>';
+        } else {
+            children.forEach(child => {
+                const li = document.createElement('li');
+                li.textContent = `${child.firstName} ${child.lastName}`;
+                li.style.padding = '4px 0';
+                li.style.borderBottom = '1px solid rgba(0,0,0,0.05)';
+                childrenList.appendChild(li);
+            });
+        }
+    }
+
+    // Add Child Button Handler
+    const addChildBtn = document.getElementById('addChildBtn');
+    if (addChildBtn) {
+        addChildBtn.onclick = () => {
+            // Close current modal
+            memberModal.style.display = 'none';
+
+            // Open new modal for child
+            setTimeout(() => {
+                document.getElementById('modal-title').textContent = "Legg til barn";
+                memberForm.reset();
+                document.getElementById('member-id').value = '';
+                populateDropdowns();
+
+                // Pre-select parent based on gender
+                if (member.gender === 'female') {
+                    document.getElementById('motherId').value = member.id;
+                } else if (member.gender === 'male') {
+                    document.getElementById('fatherId').value = member.id;
+                }
+
+                // Pre-fill last name
+                document.getElementById('lastName').value = member.lastName;
+
+                memberModal.style.display = 'flex';
+            }, 100);
+        };
+    }
 
     memberModal.style.display = 'flex';
 }
