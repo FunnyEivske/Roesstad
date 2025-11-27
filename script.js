@@ -170,6 +170,8 @@ memberForm.addEventListener('submit', (e) => {
         birthDate: document.getElementById('birthDate')?.value,
         deathDate: document.getElementById('deathDate')?.value,
         location: document.getElementById('location')?.value,
+        lat: parseFloat(document.getElementById('lat')?.value),
+        lng: parseFloat(document.getElementById('lng')?.value),
         notes: document.getElementById('notes')?.value,
         motherId: document.getElementById('motherId').value,
         fatherId: document.getElementById('fatherId').value,
@@ -350,10 +352,11 @@ function openEditModal(member) {
     document.getElementById('member-id').value = member.id;
     document.getElementById('firstName').value = member.firstName;
     document.getElementById('lastName').value = member.lastName;
-    document.getElementById('birthDate').value = member.birthDate;
-    document.getElementById('birthYear').value = member.birthYear || (member.birthDate ? member.birthDate.split('-')[0] : '');
+    document.getElementById('birthDate').value = member.birthDate || '';
     document.getElementById('deathDate').value = member.deathDate || '';
     document.getElementById('location').value = member.location || '';
+    document.getElementById('lat').value = member.lat || '';
+    document.getElementById('lng').value = member.lng || '';
     document.getElementById('notes').value = member.notes || '';
 
     // Set Gender
