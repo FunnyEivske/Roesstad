@@ -134,9 +134,18 @@ body.dark-mode .nav-brand {
 #tree-container {
     width: 100%;
     height: 100%;
-    overflow: auto;
-    position: relative;
-    background: radial-gradient(circle at center, rgba(26, 71, 42, 0.1) 0%, transparent 70%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    /* Zoom from top-left */
+    cursor: grab;
+    pointer-events: none;
+    /* Let clicks pass to #tree-tab */
+}
+
+#tree-container:active {
+    cursor: grabbing;
 }
 
 #relationship-lines {
@@ -153,6 +162,8 @@ body.dark-mode .nav-brand {
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
+    /* Let clicks pass to #tree-tab */
 }
 
 .family-card {
@@ -171,6 +182,8 @@ body.dark-mode .nav-brand {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     color: inherit;
+    pointer-events: auto;
+    /* Re-enable clicking for cards */
 }
 
 .family-card:hover {
@@ -378,23 +391,17 @@ input[type="radio"] {
     margin: 0;
 }
 
-/* Pan and Zoom Styles */
 #tree-tab {
-    overflow: hidden; /* Hide scrollbars, we use custom pan */
+    overflow: hidden;
+    /* Infinite canvas, no native scroll */
     position: relative;
     cursor: grab;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    /* Prevent text selection during drag */
 }
 
 #tree-tab:active {
     cursor: grabbing;
-}
-
-#tree-container {
-    transform-origin: 0 0; /* Zoom from top-left */
-    position: absolute;
-    top: 0;
-    left: 0;
-    /* Ensure it has size */
-    min-width: 100%; 
-    min-height: 100%;
 }
